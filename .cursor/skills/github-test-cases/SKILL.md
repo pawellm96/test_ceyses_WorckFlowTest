@@ -20,7 +20,7 @@ Read this skill before computing test-run statistics or posting comments on issu
 
 б) при наличии sub-task сравнивать описание в чек боксах и сабтасках. Учитывать если сабтаска и чекбокс обсольютно идентичны и считать за один шаг проверки. В случае если идентичные чек бокс и сабтаск имеют разные статусы (например чекбокс не отмечен, а сабтаска в статусе completed) задавать вопрос тестировщику в комментарии Тест кейса и в статистике отмечать весь тест кейс как Ошибка при выполнении. Статистику по прогону составлять совокупно по чекбоксам и сабтаскам.
 
-2) Чекбокс test pass: тестировщик должен отметить его в случае, когда тест кейсь весь успешно пройден и все чекбоксы и\или сабтаски закрыты. в случае если что-то не закрыто, но test pass отмечено, то выводится сообщение об ошибке тестирования в коментарии
+2) Чекбокс test pass отмечает только тестировщик, не агент. Отмечать только при полном проходе. И если: 1) test pass отмечен, но не все чекбоксы шагов и/или сабтаски отмечены - сообщение об ошибке.  2) все чекбоксы шагов и/или сабтаски отмечены, а test pass нет - сообщение об ошибке
 
 ## How to apply
 
@@ -54,7 +54,9 @@ From a line like `- [ ] make step 1` or `- [x] make step 1`:
 
 ### test pass
 
-The tester checks `test pass` only when **the whole test case passed** and **every step checkbox and/or every sub-task is closed**.
+Агент **никогда** не ставит и не снимает `test pass`. Это делает только тестировщик.
+
+`test pass` должен быть отмечен только при полном проходе: весь кейс успешен **и** все чекбоксы шагов и/или все сабтаски закрыты.
 
 Closed means:
 
@@ -62,32 +64,39 @@ Closed means:
 - sub-task: `closed` + `completed`
 - identical checkbox + sub-task pair: both closed (same as one combined step)
 
-If `test pass` is checked while anything is still not closed — any unchecked step checkbox, any not-completed sub-task, or a checkbox/sub-task status conflict — then:
+Две ошибки тестирования (комментарий в родительский тест-кейс, кейс = **Ошибка при выполнении**). Не дублировать, если такой же комментарий уже есть.
 
-1. Post a comment on the **parent test case** (do not duplicate if the same error is already in the thread).
-2. Mark the entire case **Ошибка при выполнении**.
-
-Do not check or uncheck `test pass` yourself unless the user asks to update the ticket.
-
-Comment template:
+**1) `test pass` отмечен, но не все чекбоксы шагов и/или сабтаски отмечены**
 
 ```text
-Ошибка тестирования: отмечен test pass, но не все чекбоксы и/или сабтаски закрыты.
+Ошибка тестирования: отмечен test pass, но не все чекбоксы шагов и/или сабтаски закрыты.
 
 Не закрыто:
 - чекбокс: "<описание>" — не отмечен
 - сабтаск: "<title>" (#<n>) — <open|reopened>
 
-Снимите test pass или закройте все шаги, затем отметьте test pass снова.
+Тестировщик: снимите test pass или закройте все шаги, затем отметьте test pass снова.
+```
+
+**2) все чекбоксы шагов и/или сабтаски отмечены, а `test pass` нет**
+
+```text
+Ошибка тестирования: все шаги закрыты, но test pass не отмечен.
+
+Закрыто:
+- чекбоксы шагов: все отмечены
+- сабтаски: все completed
+
+Тестировщик: отметьте test pass, если кейс действительно пройден целиком.
 ```
 
 Case result involving `test pass`:
 
 - all steps closed **and** `test pass` checked **and** no checkbox/sub-task conflict → **Пройден**
-- all steps closed, `test pass` not checked, no conflict → **В процессе** (прогон шагов закончен, итог не подтверждён)
 - some steps closed, `test pass` not checked, no conflict → **В процессе**
 - no steps closed, `test pass` not checked → **Не запускался**
-- `test pass` checked while something is not closed → **Ошибка при выполнении** + comment
+- `test pass` checked, but not all step checkboxes and/or sub-tasks closed → **Ошибка при выполнении** + comment (случай 1)
+- all step checkboxes and/or sub-tasks closed, `test pass` not checked → **Ошибка при выполнении** + comment (случай 2)
 
 ### Rule a — no sub-tasks
 
@@ -118,7 +127,7 @@ For an identical pair:
 | unchecked | not completed | not closed |
 | checked vs completed mismatch | any other combo | **Ошибка при выполнении** for the **whole** case |
 
-On mismatch: do not keep a mixed percent as the case result. Mark the entire test case **Ошибка при выполнении**. Still list step-level facts in the report. Then apply **test pass** rules: if `test pass` is also checked, still post the testing-error comment (or include both conflicts in one comment).
+On mismatch: do not keep a mixed percent as the case result. Mark the entire test case **Ошибка при выполнении**. Still list step-level facts in the report. Then apply **test pass** rules. If `test pass` conflicts with step/sub-task closure, post the matching testing-error comment (or combine with the mismatch comment).
 
 Then post a comment on the **parent test case issue** (not on the sub-task). Use GitHub `add_issue_comment`. If a comment with the same pair already exists in the thread, do not duplicate.
 
@@ -150,7 +159,7 @@ Board column `Done` is not Pass. **Пройден** only when `test pass` is che
 
 ## Examples
 
-**Rule a, steps done, итог не подтверждён.**
+**Случай 2 — шаги закрыты, test pass нет.** Агент не отмечает `test pass`.
 
 ```markdown
 - [x] make step 1
@@ -158,9 +167,9 @@ Board column `Done` is not Pass. **Пройден** only when `test pass` is che
 - [ ] test pass
 ```
 
-No sub-tasks. Steps 2/2 closed, `test pass` empty → **В процессе**, not **Пройден**.
+No sub-tasks. Steps 2/2 closed, `test pass` empty → comment «Ошибка тестирования», result **Ошибка при выполнении**.
 
-**Rule a, ошибка тестирования.**
+**Случай 1 — test pass есть, шаги не все закрыты.**
 
 ```markdown
 - [x] make step 1
@@ -172,4 +181,4 @@ No sub-tasks. Steps 2/2 closed, `test pass` empty → **В процессе**, n
 
 **Rule b, identical, conflict.** Checkbox `- [ ] step 2`, sub-issue title `step 2` closed completed. One combined step, statuses differ → comment on the parent case, result **Ошибка при выполнении**. If `test pass` is also checked, add the testing-error comment.
 
-**Rule b, not identical.** Checkbox `make step 1` and sub-issue `step 1` are two different steps. Count both in combined stats. `test pass` is valid only after **both** are closed.
+**Rule b, not identical.** Checkbox `make step 1` and sub-issue `step 1` are two different steps. Count both in combined stats. `test pass` is valid only after **both** are closed **and** the tester has checked `test pass`. The agent still does not check it.
