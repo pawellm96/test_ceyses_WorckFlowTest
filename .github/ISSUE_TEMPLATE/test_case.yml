@@ -1,4 +1,4 @@
-name: Test case
+name: 🧪 Test case
 description: Create a test case with Description, Steps and Summury result
 labels:
   - test case
@@ -22,7 +22,7 @@ body:
   - type: textarea
     id: steps
     attributes:
-      label: Steps
+      label: 👣 Steps
       description: Each step must be a checkbox. One action per line. Do not use a numbered list.
       value: |
         - [ ] 
