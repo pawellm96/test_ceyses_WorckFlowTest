@@ -1,0 +1,46 @@
+name: Test case
+description: Create a test case with Description, Steps and Summury result
+labels:
+  - test case
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill Description, Steps and Summury result.
+        Steps must be checkboxes (`- [ ]`).
+        Do not check `test pass` when creating the case — the tester marks it only after a full pass.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Preconditions, what is being verified, and the overall expected result
+      placeholder: User is registered. Open /login. After submit, dashboard is shown.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      description: Each step must be a checkbox. One action per line. Do not use a numbered list.
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+      placeholder: |
+        - [ ] Enter valid email and password
+        - [ ] Click Login
+        - [ ] Check that /dashboard is opened
+    validations:
+      required: true
+
+  - type: textarea
+    id: summury-result
+    attributes:
+      label: Summury result
+      description: Leave `test pass` unchecked. The tester checks it only when every step checkbox and/or sub-task is closed.
+      value: |
+        - [ ] test pass
+    validations:
+      required: true
