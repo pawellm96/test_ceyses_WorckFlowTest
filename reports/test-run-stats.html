@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Статистика прогона test cases</title>
+  <style>
+    :root {
+      --bg: #f6f6f4;
+      --fg: #1b1b18;
+      --muted: #5f5f58;
+      --line: #e3e3dd;
+      --card: #ffffff;
+      --warn: #b45309;
+      --warn-bg: #fff7ed;
+      --danger: #b42318;
+      --ok: #067647;
+      --info: #175cd3;
+      --info-bg: #eff8ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--fg);
+      background: var(--bg);
+      font: 15px/1.5 "Segoe UI", system-ui, sans-serif;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 32px 24px 56px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      font-weight: 650;
+    }
+
+    h2 {
+      margin: 28px 0 12px;
+      font-size: 18px;
+      font-weight: 650;
+    }
+
+    p { margin: 0 0 12px; }
+
+    .sub,
+    .caption {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .callout {
+      margin: 0 0 20px;
+      padding: 12px 14px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left-width: 4px;
+    }
+
+    .callout.warn {
+      border-left-color: var(--warn);
+      background: var(--warn-bg);
+    }
+
+    .callout.info {
+      border-left-color: var(--info);
+      background: var(--info-bg);
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      padding: 14px 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+    }
+
+    .stat .v {
+      font-size: 28px;
+      font-weight: 650;
+      line-height: 1.1;
+    }
+
+    .stat .l {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stat.warn .v { color: var(--warn); }
+    .stat.danger .v { color: var(--danger); }
+    .stat.info .v { color: var(--info); }
+
+    .card-h {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+      font-weight: 650;
+    }
+
+    a {
+      color: var(--info);
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    .usage-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .usage {
+      display: flex;
+      height: 12px;
+      margin: 8px 0 14px;
+      overflow: hidden;
+      background: #ecece8;
+    }
+
+    .usage .ok { flex: 2; background: var(--ok); }
+    .usage .fail { flex: 1; background: #d97706; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    tr.success td:first-child { box-shadow: inset 3px 0 0 var(--ok); }
+    tr.danger td:first-child { box-shadow: inset 3px 0 0 var(--danger); }
+    tr.warning td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+    tr.info td:first-child { box-shadow: inset 3px 0 0 var(--info); }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 8px 0;
+    }
+
+    .bars { display: grid; gap: 10px; }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 40px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .bar-track {
+      height: 16px;
+      background: #ecece8;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--info);
+    }
+
+    .caption {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .pie-wrap {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .legend {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .legend b {
+      color: var(--fg);
+      font-weight: 600;
+    }
+
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    @media (max-width: 800px) {
+      .stats,
+      .split {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Статистика прогона test cases</h1>
+    <p class="sub">Источник: GitHub Project «test cases» и issues репозитория pawellm96/test_ceyses_WorckFlowTest · снимок 10 Oct 2026</p>
+
+    <div class="callout warn">
+      <strong>Pass/Fail в GitHub нет</strong>
+      Результат восстановлен по статусу issue и чеклистам. Done на борде ≠ тест прошёл. Fail = шаг открыт повторно или чекбокс «test pass» не отмечен.
+    </div>
+
+    <div class="stats">
+      <div class="stat warn">
+        <div class="v">66%</div>
+        <div class="l">Основная задача #6</div>
+      </div>
+      <div class="stat">
+        <div class="v">5 / 6</div>
+        <div class="l">Карточек в Done</div>
+      </div>
+      <div class="stat danger">
+        <div class="v">1</div>
+        <div class="l">Не прошёл (reopened)</div>
+      </div>
+      <div class="stat info">
+        <div class="v">1</div>
+        <div class="l">Ещё не запускался</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        Основная тестовая задача
+        <a href="https://github.com/pawellm96/test_ceyses_WorckFlowTest/issues/6">#6</a>
+      </div>
+      <p>Test case with steps from sub task — закрыта как completed, на борде Done. По сабтаскам GitHub считает 2 из 3 шагов.</p>
+      <div class="usage-labels">
+        <span>Выполнение шагов</span>
+        <span>2 / 3 · 66%</span>
+      </div>
+      <div class="usage">
+        <div class="ok"></div>
+        <div class="fail"></div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Шаг</th>
+            <th>Issue</th>
+            <th>Issue state</th>
+            <th>Борда</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="success">
+            <td>step 1</td>
+            <td>#7</td>
+            <td>closed / completed</td>
+            <td>Done</td>
+          </tr>
+          <tr class="danger">
+            <td>step 2</td>
+            <td>#8</td>
+            <td>open / reopened</td>
+            <td>Done</td>
+          </tr>
+          <tr class="success">
+            <td>step 3</td>
+            <td>#9</td>
+            <td>closed / completed</td>
+            <td>Done</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="caption">Родитель закрыли при открытом #8. На борде шаг 2 тоже в Done — колонка и факт провала расходятся.</p>
+    </div>
+
+    <div class="split">
+      <section>
+        <h2>Колонки борды test cases</h2>
+        <div class="bars">
+          <div class="bar-row">
+            <span>Todo</span>
+            <div class="bar-track"><div class="bar-fill" style="width: 20%"></div></div>
+            <span>1</span>
+          </div>
+          <div class="bar-row">
+            <span>In Progress</span>
+            <div class="bar-track"><div class="bar-fill" style="width: 0"></div></div>
+            <span>0</span>
+          </div>
+          <div class="bar-row">
+            <span>Done</span>
+            <div class="bar-track"><div class="bar-fill" style="width: 100%"></div></div>
+            <span>5</span>
+          </div>
+        </div>
+        <p class="caption">GitHub Project test cases · 6 карточек · колонка Status</p>
+      </section>
+      <section>
+        <h2>Исход кейсов библиотеки</h2>
+        <div class="pie-wrap">
+          <svg width="180" height="180" viewBox="0 0 42 42" aria-label="Исход кейсов библиотеки">
+            <circle cx="21" cy="21" r="15.915" fill="none" stroke="#ecece8" stroke-width="8"></circle>
+            <circle cx="21" cy="21" r="15.915" fill="none" stroke="#b42318" stroke-width="8" stroke-dasharray="33.333 66.667" stroke-dashoffset="25"></circle>
+            <circle cx="21" cy="21" r="15.915" fill="none" stroke="#d97706" stroke-width="8" stroke-dasharray="33.333 66.667" stroke-dashoffset="-8.333"></circle>
+            <circle cx="21" cy="21" r="15.915" fill="none" stroke="#9ca3af" stroke-width="8" stroke-dasharray="33.333 66.667" stroke-dashoffset="-41.667"></circle>
+          </svg>
+          <div class="legend">
+            <span><i class="dot" style="background:#b42318"></i> Не прошёл / неполный</span>
+            <span><i class="dot" style="background:#d97706"></i> Частично (66%)</span>
+            <span><i class="dot" style="background:#9ca3af"></i> Не запускался</span>
+            <p>
+              <b>3 issue с label test case</b><br />
+              Ни у одного не отмечен «test pass»
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <h2>Уже в Done</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Карточка</th>
+          <th>Issue</th>
+          <th>Борда</th>
+          <th>Факт</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="warning">
+          <td>#1_Test case for library</td>
+          <td>#3</td>
+          <td>Done</td>
+          <td>Закрыт, но «test pass» пустой; step 1 не отмечен</td>
+        </tr>
+        <tr class="success">
+          <td>step 1</td>
+          <td>#7</td>
+          <td>Done</td>
+          <td>closed / completed</td>
+        </tr>
+        <tr class="danger">
+          <td>step 2</td>
+          <td>#8</td>
+          <td>Done</td>
+          <td>reopened — не прошёл</td>
+        </tr>
+        <tr class="success">
+          <td>step 3</td>
+          <td>#9</td>
+          <td>Done</td>
+          <td>closed / completed</td>
+        </tr>
+        <tr class="warning">
+          <td>Test case with steps from sub task</td>
+          <td>#6</td>
+          <td>Done</td>
+          <td>Родитель закрыт при 66% шагов</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Не прошли / не завершены</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Тест</th>
+          <th>Issue</th>
+          <th>Почему</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="danger">
+          <td>step 2 (сабтаска #6)</td>
+          <td>#8</td>
+          <td>Закрывали, затем reopen. Это единственный явный непроход.</td>
+        </tr>
+        <tr class="warning">
+          <td>#1_Test case for library</td>
+          <td>#3</td>
+          <td>В Done, но чекбокс «test pass» не стоит; step 1 пустой.</td>
+        </tr>
+        <tr class="info">
+          <td>#2_Test case for library</td>
+          <td>#4</td>
+          <td>Todo, все шаги и «test pass» пустые — ещё не гоняли.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <strong>Задача Test_task #2</strong>
+      Issue Test_task на борде main test project всё ещё Todo и без сабтасок. В процент #6 она не входит.
+    </div>
+  </main>
+</body>
+</html>
